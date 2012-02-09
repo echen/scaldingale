@@ -60,7 +60,7 @@ You want to calculate how similar every two movies are, so that if someone watch
 
 How should you define the similarity between any two movies?
 
-One way is to use their *correlation*:
+One way is to use their **correlation**:
 
 * For every pair of movies A and B, find all the people who rated both A and B.
 * Use these ratings to form a Movie A vector and a Movie B vector.
@@ -93,7 +93,7 @@ val ratingPairs =
 
 Before using these rating pairs to calculate correlation, let's stop for a bit.
 
-Since we're explicitly thinking of movies as *vectors* of ratings, it's natural to compute some very vector-y things like norms and dot products, as well as the length of each vector and the sum over all elements in each vector. So let's compute these:
+Since we're explicitly thinking of movies as **vectors** of ratings, it's natural to compute some very vector-y things like norms and dot products, as well as the length of each vector and the sum over all elements in each vector. So let's compute these:
 
 ```scala
 /**
@@ -174,7 +174,13 @@ And here's a sample of the top output I got:
 
 [![Top Book-Crossing Pairs](http://dl.dropbox.com/u/10506/blog/scaldingale/top-book-crossing-sims-correlation.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/top-book-crossing-sims-correlation.png)
 
-We see that Harry Potter and Lord of the Ring books are similar to other Harry Potter and Lord of the Ring books, a Tom Clancy book is similar to a John Grisham book, and chick lit (*Summer Sisters*, by Judy Blume) is similar to chick lit (*Bridget Jones*), so our Scalding job is looking pretty good.
+We see that 
+
+* *Harry Potter* and *Lord of the Rings* books are similar to other *Harry Potter* and *Lord of the Rings* books
+* A Tom Clancy book is similar to a John Grisham book
+* Chick lit (*Summer Sisters*, by Judy Blume) is similar to chick lit (*Bridget Jones*
+
+So our Scalding job is looking pretty good.
 
 Let's also look at books similar to *The Great Gatsby*:
 
@@ -198,7 +204,7 @@ def cosineSimilarity(dotProduct : Double, ratingNorm : Double, rating2Norm : Dou
 
 ## Correlation, Take II
 
-We can also also add a *regularized* correlation, by (say) adding N virtual movie pairs that have zero correlation. This helps avoid noise if some movie pairs have very few raters in common -- for example, when looking at *The Great Gatsby* above, it had an unlikely raw correlation of 1 with many other books, due to the fact that those book pairs had few ratings.
+We can also also add a *regularized* correlation, by (say) adding N virtual movie pairs that have zero correlation. This helps avoid noise if some movie pairs have very few raters in common -- for example, *The Great Gatsby* had an unlikely raw correlation of 1 with many other books, due simply to the fact that those book pairs had very few ratings.
 
 ```scala
 def regularizedCorrelation(size : Double, dotProduct : Double, ratingSum : Double, 
@@ -296,7 +302,7 @@ class BookCrossing(args : Args) extends VectorSimilarities(args) {
 }
 ```
 
-The input method simply reads from a TSV file containing ratings, and lets the `VectorSimilarities` class do all the work.
+The input method simply reads from a TSV file and lets the `VectorSimilarities` class do all the work.
 
 ## Song Similarities with Twitter + iTunes
 
@@ -305,7 +311,7 @@ But why limit ourselves to books? We do, after all, have Twitter at our fingerti
 <blockquote class="twitter-tweet"><p>rated Born This Way by Lady GaGa 5 stars <a href="http://t.co/wTYAwWqm" title="http://itun.es/iSg92N">itun.es/iSg92N</a> <a href="https://twitter.com/search/%2523iTunes">#iTunes</a></p>&mdash; gggf (@GalMusic92) <a href="https://twitter.com/GalMusic92/status/167267017865428996" data-datetime="2012-02-08T15:22:19+00:00">February 8, 2012</a></blockquote>
 <script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-(iTunes apparently lets you send a tweet whenever you rate a song.) So let's make use of this data and generate music recommendations!
+(iTunes apparently lets you send a tweet whenever you rate a song.) So let's make use of this data and generate music recommendations.
 
 Again, we create a new class that overrides the abstract `input` defined in `VectorSimilarities`:
 
@@ -332,21 +338,21 @@ class ITunes(args : Args) extends VectorSimilarities(args) {
 }
 ```
 
-Here, I used a Twitter-internal tweet source that provides data on tweets, but you could just as easily [scrape Twitter yourself](https://dev.twitter.com/docs) and provide your own source of tweets instead.
+In this code, I used a Twitter-internal tweet source that provides data on tweets, but you could just as easily [scrape Twitter yourself](https://dev.twitter.com/docs) and provide your own source of tweets instead.
 
-And here are some songs you might like if you recently listened to Beyoncé:
+Here are some songs you might like if you recently listened to **Beyoncé**:
 
 [![Jason Mraz](http://dl.dropbox.com/u/10506/blog/scaldingale/beyonce.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/beyonce.png)
 
 (Unfortunately, the data was quite sparse, so the similarities might not be too great.)
 
-And some recommended songs if you like Lady Gaga 
+And some recommended songs if you like **Lady Gaga**:
 
 [![Lady Gaga](http://dl.dropbox.com/u/10506/blog/scaldingale/lady-gaga.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/lady-gaga.png)
 
 ## Location Similarities with Foursquare Check-ins
 
-But what if we don't have explicit ratings? For example, we could be a news site that wants to generate article recommendations, and we only have user *visits* onto each story.
+But what if we don't have explicit ratings? For example, we could be a news site that wants to generate article recommendations, and maybe we only have user *visits* on each story.
 
 Or what if we want to generate restaurant or tourist recommendations, when all we know is who visits each location?
 
@@ -357,7 +363,7 @@ Let's finally make Foursquare check-ins useful. (I kid, I kid.)
 
 Instead of using an explicit rating given to us, we can simply generate a dummy rating of 1 for each check-in. Correlation doesn't make sense any more, but we can still pay attention to a measure like Jaccard simiilarity.
 
-So again, I created a new class:
+So again, I create a new class that scrapes Twitter for Foursquare check-ins and parses them into a ratings format:
 
 ```scala
 class Foursquare(args : Args) extends VectorSimilarities(args) {  
@@ -381,15 +387,15 @@ class Foursquare(args : Args) extends VectorSimilarities(args) {
 }
 ```
 
-And bam! Here are locations similar to the Empire State Building:
+And bam! Here are locations similar to the **Empire State Building**:
 
 [![Empire State Building](http://dl.dropbox.com/u/10506/blog/scaldingale/empire-state-building.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/empire-state-building.png)
 
-Here are some other places you might like to check out, if you check-in at Bergdorf Goodman:
+Here are places you might want to check out, if you check-in at **Bergdorf Goodman**:
 
 [![Bergdorf Goodman](http://dl.dropbox.com/u/10506/blog/scaldingale/bergdorf-goodman.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/bergdorf-goodman.png)
 
-And here's where to go after the Statue of Liberty:
+And here's where to go after the **Statue of Liberty**:
 
 [![Statue of Liberty](http://dl.dropbox.com/u/10506/blog/scaldingale/statue-of-liberty.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/statue-of-liberty.png)
 
@@ -397,7 +403,7 @@ Power of Twitter, yo.
 
 # Next Steps
 
-Hopefully this post gave you a taste of the awesomeness of Scalding. To learn even more, here are some links:
+Hopefully this post gave you a taste of the awesomeness of Scalding. To learn even more, check out these links:
 
 * The [official Scalding repository](https://github.com/twitter/scalding) on Github.
 * [A Getting Started Guide](https://github.com/twitter/scalding/wiki/Getting-Started) on the Scalding wiki.
@@ -406,6 +412,6 @@ Hopefully this post gave you a taste of the awesomeness of Scalding. To learn ev
 
 Watch out for more documentation soon, and definitely [follow @Scalding on Twitter](https://twitter.com/#!/scalding) for updates or to ask any questions.
 
-# Thank you to the greatest guys I know
+# Mad Props
 
-And finally, a huge shoutout and my deepest thanks to [Argyris Zymnis](https://twitter.com/argyris), [Avi Bryant](https://twitter.com/avibryant), and [Oscar Boykin](https://twitter.com/posco), the master hackers behind Scalding, who tirelessly answer all my questions and spend unimaginable hours making Scalding a joy to learn and use. #AWESOMEWORKGUYS
+And finally, a huge shoutout to [Argyris Zymnis](https://twitter.com/argyris), [Avi Bryant](https://twitter.com/avibryant), and [Oscar Boykin](https://twitter.com/posco), the mastermind hackers who have spent (and continue spending!) unimaginable hours making Scalding a joy to learn and use. #AWESOMEWORKGUYS
