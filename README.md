@@ -15,14 +15,12 @@ tweets.map('tweet -> 'length) { tweet : String => tweet.size }.groupBy('length) 
 
 Two notes before we begin:
 
-* [This Github repository](https://github.com/echen/scalding-movie-recommendations) contains a better-looking version of this post, as well as all the code used.
+* [This Github repository](https://github.com/echen/scalding-movie-recommendations) contains all the code used.
 * For a gentler introduction to Scalding, see [this Getting Started guide](https://github.com/twitter/scalding/wiki/Getting-Started) on the Scalding wiki.
 
 # Movie Similarities
 
-Imagine you run an online movie business, and you want to generate movie recommendations. You have a rating system (people can rate movies with 1 to 5 stars), and all of the ratings are stored in a TSV file* somewhere.
-
-*Not really a good idea! But let's assume for simplicity.
+Imagine you run an online movie business, and you want to generate movie recommendations. You have a rating system (people can rate movies with 1 to 5 stars), and we'll assume for simplicity that all of the ratings are stored in a TSV file somewhere.
 
 Let's start by reading the ratings into a Scalding job.
 
@@ -66,7 +64,7 @@ One way is to use their *correlation*:
 
 * For every pair of movies A and B, find all the people who rated both A and B.
 * Use these ratings to form a Movie A vector and a Movie B vector.
-* Calculate the correlation between the two vectors.
+* Calculate the correlation between these two vectors.
 
 Let's start with the first two steps.
 
@@ -90,8 +88,7 @@ val ratingPairs =
     .filter('movie, 'movie2) { movies : (String, String) => movies._1 < movies._2 }
     .project('movie, 'rating, 'numRaters, 'movie2, 'rating2, 'numRaters2)
 
-// By grouping on ('movie, 'movie2), we can now get all the people who rated any pair of movies,
-// (i.e., our rating vector pairs).
+// By grouping on ('movie, 'movie2), we can now get all the people who rated any pair of movies.
 ```
 
 Before using these rating pairs to calculate correlation, let's stop for a bit.
@@ -111,19 +108,19 @@ val vectorCalcs =
     }
     .groupBy('movie, 'movie2) { 
 			_
-				.size // length of each vector
-				.sum('ratingProd -> 'dotProduct)
-				.sum('rating -> 'ratingSum)
-				.sum('rating2 -> 'rating2Sum)
-				.sum('ratingSq -> 'ratingNormSq)
-				.sum('rating2Sq -> 'rating2NormSq)
-				.max('numRaters) // Just an easy way to make sure the numRaters field stays.
-				.max('numRaters2)				
-				// Notice that all of these operations chain together like in a builder object.
+        .size // length of each vector
+        .sum('ratingProd -> 'dotProduct)
+        .sum('rating -> 'ratingSum)
+        .sum('rating2 -> 'rating2Sum)
+        .sum('ratingSq -> 'ratingNormSq)
+        .sum('rating2Sq -> 'rating2NormSq)
+        .max('numRaters) // Just an easy way to make sure the numRaters field stays.
+        .max('numRaters2)				
+        // Notice that all of these operations chain together like in a builder object.
 		}
 ```
 
-To summarize, each row in `vectorCalcs` contains the following fields:
+To summarize, each row in `vectorCalcs` now contains the following fields:
 
 * **movie, movie2**
 * **numRaters, numRaters2**: the total number of people who rated each movie
@@ -138,7 +135,7 @@ But recall that we can also write correlation in the following form:
 
 $Corr(X, Y) = (n \sum xy - \sum x \sum y) / (sqrt[n \sum x^2 - (\sum x)^2] sqrt[n \sum y^2 - (\sum y)^2])$
 
-(See the [Wikipedia page](http://en.wikipedia.org/wiki/Correlation_and_dependence).)
+(See the [Wikipedia page](http://en.wikipedia.org/wiki/Correlation_and_dependence) on correlation.)
 
 Notice that every one of the elements in this formula is a field in `vectorCalcs`! So instead of using the standard calculation, let's use this form instead:
 
@@ -164,12 +161,12 @@ And that's it! To see the full code, check out the Github repository [here](http
 
 # Book Similarities
 
-Let's run this code over some real data. Unfortunately, I didn't have a clean source of movie ratings available, so I used instead [Book-Crossing's dataset of book ratings](http://www.informatik.uni-freiburg.de/~cziegler/BX/), which contains about 1 million ratings of 250,000 books.
+Let's run this code over some real data. Unfortunately, I didn't have a clean source of movie ratings available, so instead I used [a dataset of book ratings](http://www.informatik.uni-freiburg.de/~cziegler/BX/), which contains about 1 million ratings of 250,000 books.
 
-I ran a quick command, using the handy [scald.rb script](https://github.com/twitter/scalding/wiki/Scald.rb):
+I ran a quick command, using the handy [scald.rb script](https://github.com/twitter/scalding/wiki/Scald.rb) that Scalding provides:
 
 ```
-# Send the job off to a Hadoop cluster!
+# Send the job off to a Hadoop cluster
 scald.rb MovieSimilarities.scala --input book-crossing-ratings.tsv --output book-crossing-similarities.tsv
 ```
 
@@ -177,7 +174,7 @@ And here's a sample of the top output I got:
 
 [![Top Book-Crossing Pairs](http://dl.dropbox.com/u/10506/blog/scaldingale/top-book-crossing-sims-correlation.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/top-book-crossing-sims-correlation.png)
 
-We see that Harry Potter and Lord of the Ring books are similar to other Harry Potter and Lord of the Ring books, a Tom Clancy book is similar to a John Grisham book, and chick lit (*Summer Sisters*, by Judy Blume) is similar to chick lit (*Bridget Jones*), so our Scalding job is looking pretty good! Using this data, we could recommend books like Grisham's *The Street Lawyer* to people who liked Tom Clancy's *Debt of Honor*.
+We see that Harry Potter and Lord of the Ring books are similar to other Harry Potter and Lord of the Ring books, a Tom Clancy book is similar to a John Grisham book, and chick lit (*Summer Sisters*, by Judy Blume) is similar to chick lit (*Bridget Jones*), so our Scalding job is looking pretty good.
 
 Let's also look at books similar to *The Great Gatsby*:
 
@@ -189,6 +186,8 @@ Let's also look at books similar to *The Great Gatsby*:
 
 Of course, there are lots of other similarity measures we could use besides correlation.
 
+## Cosine Similarity
+
 For example, [cosine similarity](http://en.wikipedia.org/wiki/Cosine_similarity) is a another common vector-based similarity measure.
 
 ```scala
@@ -197,7 +196,9 @@ def cosineSimilarity(dotProduct : Double, ratingNorm : Double, rating2Norm : Dou
 }
 ```
 
-We can also also add a *regularized* correlation, by (say) adding N virtual movie pairs that have zero correlation. This helps avoid noise if some movie pairs have very few raters in common. (For example, when looking at *The Great Gatsby* above, many books had a raw correlation of 1 -- an unlikely correlation due to the fact that those pairs had few ratings, which we can try to fix by regularizing.)
+## Correlation, Take II
+
+We can also also add a *regularized* correlation, by (say) adding N virtual movie pairs that have zero correlation. This helps avoid noise if some movie pairs have very few raters in common -- for example, when looking at *The Great Gatsby* above, it had an unlikely raw correlation of 1 with many other books, due to the fact that those book pairs had few ratings.
 
 ```scala
 def regularizedCorrelation(size : Double, dotProduct : Double, ratingSum : Double, 
@@ -211,6 +212,8 @@ def regularizedCorrelation(size : Double, dotProduct : Double, ratingSum : Doubl
 }
 ```
 
+## Jaccard Similarity
+
 Recall that [one of the lessons of the Netflix prize]() was that implicit data can be quite useful -- the mere fact that you rate a James Bond movie, even if you rate it quite horribly, suggests that you'd probably be interested in similar films. So we can also ignore the value itself of each rating and use a *set*-based similarity measure like [Jaccard similarity](http://en.wikipedia.org/wiki/Jaccard_index).
 
 ```scala
@@ -219,6 +222,8 @@ def jaccardSimilarity(usersInCommon : Double, totalUsers1 : Double, totalUsers2 
   usersInCommon / union
 }
 ```
+
+## Adding these in
 
 And here we add all these similarity measures to our output.
 
@@ -246,11 +251,11 @@ val similarities =
 
 # Book Similarities Revisited
 
-Let's take a look again at the book similarities above, but with these new fields added in. Here are some of the top Book-Crossing pairs, sorted by regularized correlation:
+Let's take another look at the book similarities above, this time with these new fields added in. Here are some of the top Book-Crossing pairs, sorted by the shrunk correlation:
 
 [![Top Book-Crossing Pairs](http://dl.dropbox.com/u/10506/blog/scaldingale/top-book-crossing-sims.png)](http://dl.dropbox.com/u/10506/blog/scaldingale/top-book-crossing-sims.png)
 
-Notice how the regularization affects things: the Dark Tower pair has a pretty high raw correlation, but relatively few ratings (which makes us less confident in the raw correlation), so it ends up below the others.
+Notice how regularization affects things: the Dark Tower pair has a pretty high raw correlation, but relatively few ratings (which makes us less confident in the raw correlation), so it ends up below the others.
 
 And here are books similar to *The Great Gatsby*, this time ordered by cosine similarity:
 
@@ -260,7 +265,7 @@ And here are books similar to *The Great Gatsby*, this time ordered by cosine si
 
 Okay, so right now, our code is tied to our specific `ratings.tsv` input. But what if we change the way we store our ratings, or what if we want to generate similarities for something entirely different?
 
-Let's abstract away our input. We'll create a [VectorSimilarities class]() that represents input data in the following format:
+Let's abstract away our input. We'll create a [VectorSimilarities class](https://github.com/echen/scaldingale/blob/master/VectorSimilarities.scala) that represents input data in the following format:
 
 ```scala
 // This is an abstract method that returns a Pipe (aka, a stream of rating tuples).
@@ -279,8 +284,7 @@ Whenever we want to define a new input format, we simply subclass the abstract `
 For example, here's a class I could have used to generate the music recommendations above:
 
 ```scala
-class BookCrossing(args : Args) extends VectorSimilarities(args) {
-  
+class BookCrossing(args : Args) extends VectorSimilarities(args) {  
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val bookCrossingRatings =
       Tsv("book-crossing-ratings.tsv")
@@ -288,10 +292,11 @@ class BookCrossing(args : Args) extends VectorSimilarities(args) {
         .mapTo((0, 1, 2) -> (userField, itemField, ratingField)) { fields : (String, String, Double) => fields }
     
     bookCrossingRatings
-  }
-  
+  }  
 }
 ```
+
+The input method simply reads from a TSV file containing ratings, and lets the `VectorSimilarities` class do all the work.
 
 ## Song Similarities with Twitter + iTunes
 
@@ -300,13 +305,12 @@ But why limit ourselves to books? We do, after all, have Twitter at our fingerti
 <blockquote class="twitter-tweet"><p>rated Born This Way by Lady GaGa 5 stars <a href="http://t.co/wTYAwWqm" title="http://itun.es/iSg92N">itun.es/iSg92N</a> <a href="https://twitter.com/search/%2523iTunes">#iTunes</a></p>&mdash; gggf (@GalMusic92) <a href="https://twitter.com/GalMusic92/status/167267017865428996" data-datetime="2012-02-08T15:22:19+00:00">February 8, 2012</a></blockquote>
 <script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-iTunes apparently lets you send a tweet whenever you rate a song. So let's make use of this data and generate music recommendations!
+(iTunes apparently lets you send a tweet whenever you rate a song.) So let's make use of this data and generate music recommendations!
 
 Again, we create a new class that overrides the abstract `input` defined in `VectorSimilarities`:
 
 ```scala
-class ITunes(args : Args) extends VectorSimilarities(args) {
-  
+class ITunes(args : Args) extends VectorSimilarities(args) {  
   // Example tweet:
   // rated New Kids On the Block: Super Hits by New Kids On the Block 5 stars http://itun.es/iSg3Fc #iTunes
   val ITUNES_REGEX = """rated (.+?) by (.+?) (\d) stars .*? #iTunes""".r
@@ -319,14 +323,14 @@ class ITunes(args : Args) extends VectorSimilarities(args) {
         .flatMap('text -> ('song, 'artist, 'rating)) {
           text : String =>         
           ITUNES_REGEX.findFirstMatchIn(text).map { _.subgroups }.map { l => (l(0), l(1), l(2)) }
-        }
+        }  
+        .rename(('userId, 'song, 'rating) -> (userField, itemField, ratingField))
+        .project(userField, itemField, ratingField)
     
     itunesRatings
-      .rename(('userId, 'song, 'rating) -> (userField, itemField, ratingField))
-      .project(userField, itemField, ratingField)
   }
-  
 }
+```
 
 Here, I used a Twitter-internal tweet source that provides data on tweets, but you could just as easily [scrape Twitter yourself](https://dev.twitter.com/docs) and provide your own source of tweets instead.
 
@@ -356,8 +360,7 @@ Instead of using an explicit rating given to us, we can simply generate a dummy 
 So again, I created a new class:
 
 ```scala
-class Foursquare(args : Args) extends VectorSimilarities(args) {
-  
+class Foursquare(args : Args) extends VectorSimilarities(args) {  
   // Example tweet: I'm at The Ambassador (673 Geary St, btw Leavenworth & Jones, San Francisco) w/ 2 others http://4sq.com/xok3rI
   // Let's limit to New York for simplicity.
   val FOURSQUARE_REGEX = """I'm at (.+?) \(.*? New York""".r
@@ -374,8 +377,7 @@ class Foursquare(args : Args) extends VectorSimilarities(args) {
         .unique(userField, itemField, ratingField)
     
     foursquareCheckins
-  }
-  
+  }  
 }
 ```
 
