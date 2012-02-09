@@ -70,16 +70,16 @@ class MovieSimilarities(args : Args) extends Job(args) {
         (ratings._1 * ratings._2, scala.math.pow(ratings._1, 2), scala.math.pow(ratings._2, 2))
       }
       .groupBy('movie, 'movie2) { 
-  			_
-  				.size // length of each vector
-  				.sum('ratingProd -> 'dotProduct)
-  				.sum('rating -> 'ratingSum)
-  				.sum('rating2 -> 'rating2Sum)
-  				.sum('ratingSq -> 'ratingNormSq)
-  				.sum('rating2Sq -> 'rating2NormSq)
-  				.max('numRaters) // Just an easy way to make sure the numRaters field stays.
-  				.max('numRaters2)
-  		}
+        _
+          .size // length of each vector
+          .sum('ratingProd -> 'dotProduct)
+          .sum('rating -> 'ratingSum)
+          .sum('rating2 -> 'rating2Sum)
+          .sum('ratingSq -> 'ratingNormSq)
+          .sum('rating2Sq -> 'rating2NormSq)
+          .max('numRaters) // Just an easy way to make sure the numRaters field stays.
+          .max('numRaters2)
+      }
 
   /**
    * Calculate similarity between rating vectors using similarity measures
