@@ -24,7 +24,7 @@ Imagine you run an online movie business, and you want to generate movie recomme
 
 Let's start by reading the ratings into a Scalding job.
 
-``` scala
+``` scala Input https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 /**
  * The input is a TSV file with three columns: (user, movie, rating).
  */  
@@ -69,7 +69,7 @@ One way is to use their **correlation**:
 
 Let's start with the first two steps.
 
-``` scala
+``` scala Find rating pairs https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 /**
  * To get all pairs of co-rated movies, we'll join `ratings` against itself.
  * So first make a dummy copy of the ratings that we can join against.
@@ -96,7 +96,7 @@ Before using these rating pairs to calculate correlation, let's stop for a bit.
 
 Since we're explicitly thinking of movies as **vectors** of ratings, it's natural to compute some very vector-y things like norms and dot products, as well as the length of each vector and the sum over all elements in each vector. So let's compute these:
 
-``` scala
+``` scala Vector calculations https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 /**
  * Compute dot products, norms, sums, and sizes of the rating vectors.
  */
@@ -140,7 +140,7 @@ $Corr(X, Y) = (n \sum xy - \sum x \sum y) / (sqrt[n \sum x^2 - (\sum x)^2] sqrt[
 
 Notice that every one of the elements in this formula is a field in `vectorCalcs`! So instead of using the standard calculation, let's use this form instead:
 
-``` scala
+``` scala Correlation https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 val correlations =
   vectorCalcs
     .map(('size, 'dotProduct, 'ratingSum, 'rating2Sum, 'ratingNormSq, 'rating2NormSq) -> 'correlation) {
@@ -197,7 +197,7 @@ Of course, there are lots of other similarity measures we could use besides corr
 
 For example, [cosine similarity](http://en.wikipedia.org/wiki/Cosine_similarity) is a another common vector-based similarity measure.
 
-``` scala
+``` scala Cosine Similarity https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 def cosineSimilarity(dotProduct : Double, ratingNorm : Double, rating2Norm : Double) = {
   dotProduct / (ratingNorm * rating2Norm)
 }
@@ -207,7 +207,7 @@ def cosineSimilarity(dotProduct : Double, ratingNorm : Double, rating2Norm : Dou
 
 We can also also add a *regularized* correlation, by (say) adding N virtual movie pairs that have zero correlation. This helps avoid noise if some movie pairs have very few raters in common -- for example, *The Great Gatsby* had a (unlikely) raw correlation of 1 with many other books, due simply to the fact that those book pairs had very few ratings.
 
-``` scala
+``` scala Regularized Correlation https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 def regularizedCorrelation(size : Double, dotProduct : Double, ratingSum : Double, 
   rating2Sum : Double, ratingNormSq : Double, rating2NormSq : Double, 
   virtualCount : Double, priorCorrelation : Double) = {
@@ -223,7 +223,7 @@ def regularizedCorrelation(size : Double, dotProduct : Double, ratingSum : Doubl
 
 Recall that [one of the lessons of the Netflix prize]() was that implicit data can be quite useful -- the mere fact that you rate a James Bond movie, even if you rate it quite horribly, suggests that you'd probably be interested in similar films. So we can also ignore the value itself of each rating and use a *set*-based similarity measure like [Jaccard similarity](http://en.wikipedia.org/wiki/Jaccard_index).
 
-``` scala
+``` scala Jaccard Similarity https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 def jaccardSimilarity(usersInCommon : Double, totalUsers1 : Double, totalUsers2 : Double) = {
   val union = totalUsers1 + totalUsers2 - usersInCommon
   usersInCommon / union
@@ -234,7 +234,7 @@ def jaccardSimilarity(usersInCommon : Double, totalUsers1 : Double, totalUsers2 
 
 Finally, we add all these similarity measures to our output.
 
-``` scala
+``` scala Similarity Measures https://github.com/echen/scaldingale/blob/master/MovieSimilarities.scala MovieSimilarities.scala
 val PRIOR_COUNT = 50
 val PRIOR_CORRELATION = 0
 
@@ -274,7 +274,7 @@ Okay, so right now, our code is tied to our specific `ratings.tsv` input. But wh
 
 Let's abstract away our input. We'll create a [VectorSimilarities class](https://github.com/echen/scaldingale/blob/master/VectorSimilarities.scala) that represents input data in the following format:
 
-``` scala
+``` scala Input abstraction https://github.com/echen/scaldingale/blob/master/VectorSimilarities.scala VectorSimilarities.scala
 // This is an abstract method that returns a Pipe (aka, a stream of rating tuples).
 // It takes in three symbols that name the user, item, and rating fields.
 def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe
@@ -290,7 +290,7 @@ Whenever we want to define a new input format, we simply subclass the abstract `
 
 For example, here's a class I could have used to generate the music recommendations above:
 
-``` scala
+``` scala BookCrossing similarities https://github.com/echen/scaldingale/blob/master/BookCrossing.scala BookCrossing.scala
 class BookCrossing(args : Args) extends VectorSimilarities(args) {  
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val bookCrossingRatings =
@@ -316,7 +316,7 @@ But why limit ourselves to books? We do, after all, have Twitter at our fingerti
 
 Again, we create a new class that overrides the abstract `input` defined in `VectorSimilarities`:
 
-``` scala
+``` scala Song similarities with Twitter + iTunes https://github.com/echen/scaldingale/blob/master/ITunes.scala ITunes.scala
 class ITunes(args : Args) extends VectorSimilarities(args) {  
   // Example tweet:
   // rated New Kids On the Block: Super Hits by New Kids On the Block 5 stars http://itun.es/iSg3Fc #iTunes
@@ -366,7 +366,7 @@ Instead of using an explicit rating given to us, we can simply generate a dummy 
 
 So again, I create a new class that scrapes Twitter for Foursquare check-ins and parses them into a ratings format:
 
-``` scala
+``` scala Location similarities with Foursquare https://github.com/echen/scaldingale/blob/master/Foursquare.scala Foursquare.scala
 class Foursquare(args : Args) extends VectorSimilarities(args) {  
   // Example tweet: I'm at The Ambassador (673 Geary St, btw Leavenworth & Jones, San Francisco) w/ 2 others http://4sq.com/xok3rI
   // Let's limit to New York for simplicity.
@@ -415,6 +415,4 @@ Watch out for more documentation soon, and definitely [follow @Scalding on Twitt
 
 # Mad Props
 
-And finally, a huge shoutout to [Argyris Zymnis](https://twitter.com/argyris), [Avi Bryant](https://twitter.com/avibryant), and [Oscar Boykin](https://twitter.com/posco), the mastermind hackers who have spent (and continue spending!) unimaginable hours making Scalding a joy to use.
-
-@argyris, @avibryant, @posco: Thanks for everything you've done. #awesomejobguys
+And finally, a huge shoutout to [Argyris Zymnis](https://twitter.com/argyris), [Avi Bryant](https://twitter.com/avibryant), and [Oscar Boykin](https://twitter.com/posco), the mastermind hackers who have spent (and continue spending!) unimaginable hours making Scalding a joy to learn and use. A deep thank you for everything you've done. #AWESOMEWORKGUYS
