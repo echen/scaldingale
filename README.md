@@ -134,7 +134,7 @@ So let's go back to calculating the correlation between movie and movie2. We cou
 
 But recall that we can also write correlation in the following form:
 
-$Corr(X, Y) = (n \sum xy - \sum x \sum y) / (sqrt[n \sum x^2 - (\sum x)^2] sqrt[n \sum y^2 - (\sum y)^2])$
+$$Corr(X, Y) = \frac{n \sum xy - \sum x \sum y}{\sqrt[n \sum x^2 - (\sum x)^2] \sqrt[n \sum y^2 - (\sum y)^2]}$$
 
 (See the [Wikipedia page](http://en.wikipedia.org/wiki/Correlation_and_dependence) on correlation.)
 
