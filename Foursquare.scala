@@ -17,7 +17,10 @@ class Foursquare(args : Args) extends VectorSimilarities(args) {
 
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val foursquareCheckins =
-      StatusSource()
+      // This is a Twitter-internal source that reads tweets off hdfs.
+      // Luckily, we have an awesome API that you could use to scrape tweets yourself:
+      // https://dev.twitter.com/docs
+      TweetSource() 
         .mapTo('userId, 'text) { s => (s.getUserId.toLong, s.getText) }
         // .filter('text) { text : String => text.contains("4sq.com") }
         .flatMap('text -> ('location, 'rating)) {
