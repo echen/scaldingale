@@ -9,7 +9,7 @@ abstract class VectorSimilarities(args : Args) extends Job(args) {
   /**
    * Parameters to regularize correlation.
    */
-  val PRIOR_COUNT = 50
+  val PRIOR_COUNT = 10
   val PRIOR_CORRELATION = 0
   
   /**
