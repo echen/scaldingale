@@ -13,7 +13,8 @@ abstract class VectorSimilarities(args : Args) extends Job(args) {
   val PRIOR_CORRELATION = 0
   
   /**
-   *
+   * Filters to speed up computation and reduce noise.
+   * Subclasses should probably override these, based on the actual data.
    */
   val MIN_NUM_RATERS = 3
   val MAX_NUM_RATERS = 10000
