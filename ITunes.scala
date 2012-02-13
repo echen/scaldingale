@@ -5,6 +5,11 @@ import com.twitter.scalding._
 import cascading.pipe.Pipe
 import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
 
+/**
+ * Calculate song similarities, using iTunes tweets.
+ *
+ * @author Edwin Chen
+ */
 class ITunes(args : Args) extends VectorSimilarities(args) {
   
   // Example tweet:

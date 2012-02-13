@@ -5,8 +5,15 @@ import com.twitter.scalding._
 import cascading.pipe.Pipe
 import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
 
+/**
+ * Calculate similarities between different attractions/locations,
+ * using Foursquare check-ins on Twitter.
+ *
+ * @author Edwin Chen
+ */
 class Foursquare(args : Args) extends VectorSimilarities(args) {
   
+  // Example tweets:
   // I'm at San Francisco Pizza (Seksyen 8, Bandar Baru Bangi) http://4sq.com/zyahAX
   // I'm at The Ambassador (673 Geary St, btw Leavenworth & Jones, San Francisco) w/ 2 others http://4sq.com/xok3rI
   val FOURSQUARE_REGEX = """I'm at (.+?) \(.*? New York""".r

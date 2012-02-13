@@ -2,6 +2,20 @@ package me.echen.scaldingale
 
 import com.twitter.scalding._
 
+/**
+ * Given a dataset of movies and their ratings by different
+ * users, how can we compute the similarity between pairs of
+ * movies?
+ *
+ * This class computes similarities between movies
+ * by representing each movie as a vector of ratings and
+ * computing similarity scores over these vectors.
+ *
+ * Similarity measures include correlation, cosine similarity,
+ * and Jaccard similarity.
+ *
+ * @author Edwin Chen
+ */
 class MovieSimilarities(args : Args) extends Job(args) {
   
   /**

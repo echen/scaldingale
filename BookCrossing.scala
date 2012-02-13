@@ -5,6 +5,10 @@ import com.twitter.scalding._
 import cascading.pipe.Pipe
 import cascading.tuple.{Tuple, TupleEntryIterator, Fields}
 
+/**
+ * Calculate book similarities using the Book-Crossing dataset at
+ *   http://www.informatik.uni-freiburg.de/~cziegler/BX/
+ */
 class BookCrossing(args : Args) extends VectorSimilarities(args) {
   
   override val MIN_NUM_RATERS = 2

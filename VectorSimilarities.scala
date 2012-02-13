@@ -4,6 +4,22 @@ import com.twitter.scalding._
 
 import cascading.pipe.Pipe
 
+/**
+ * Given a dataset of ratings, how can we compute the similarity 
+ * between pairs of items?
+ *
+ * This class defines an abstract ratings input format. Subclasses
+ * that provide a concrete implementation of the input (in the form of
+ * a tuple stream containing: a user, the item being rated, and the numeric
+ * rating of the item by the user) will automatically calculate
+ * similarities of items.
+ *
+ * In more detail, each item is represented as a (sparse) vector of all
+ * its ratings. Similarity measures (such as correlation, cosine similarity,
+ * and Jaccard similarity) are then applied to these vectors.
+ *
+ * @author Edwin Chen
+ */
 abstract class VectorSimilarities(args : Args) extends Job(args) {
   
   /**
