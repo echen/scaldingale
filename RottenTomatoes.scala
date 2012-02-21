@@ -1,6 +1,5 @@
-package com.twitter.ads.batch.job.targeting.recommendations
+package me.echen.scaldingale
 
-import com.twitter.ads.batch.source.StatusSource
 import com.twitter.scalding._
 
 import cascading.pipe.Pipe
@@ -27,7 +26,7 @@ class RottenTomatoes(args : Args) extends VectorSimilarities(args) {
 
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val rottenTomatoesRatings =
-      StatusSource()
+      TweetSource()
         .mapTo('userId, 'text) { s => (s.getUserId.toLong, s.getText) }
         .flatMap('text -> ('movie, 'rating)) {
           text : String =>
