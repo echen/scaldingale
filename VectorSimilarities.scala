@@ -129,17 +129,6 @@ abstract class VectorSimilarities(args : Args) extends Job(args) {
    */
   similarities
     .project('item, 'item2, 'correlation, 'regularizedCorrelation, 'cosineSimilarity, 'jaccardSimilarity, 'size, 'numRaters, 'numRaters2)
-    .groupBy('item, 'item2) {
-      _.sortWithTake(('correlation, 'regularizedCorrelation, 'cosineSimilarity, 'jaccardSimilarity, 'size, 'numRaters, 'numRaters2) -> 'packedTuples, 25) {
-        (t0 : (Double, Double, Double, Double, Double, Long, Long),
-         t1 : (Double, Double, Double, Double, Double, Long, Long)) =>         
-         t0._1 > t1._1
-      }
-    }
-    .flatMap('packedTuples -> ('correlation, 'regularizedCorrelation, 'cosineSimilarity, 'jaccardSimilarity, 'size, 'numRaters, 'numRaters2)) {
-      packedTuples : List[(Double, Double, Double, Double, Double, Long, Long)] => packedTuples
-    }
-    .project('item, 'item2, 'correlation, 'regularizedCorrelation, 'cosineSimilarity, 'jaccardSimilarity, 'size, 'numRaters, 'numRaters2)
     .write(Tsv(args("output")))
   
 // *************************
