@@ -22,6 +22,12 @@ class Foursquare(args : Args) extends VectorSimilarities(args) {
   override val MAX_NUM_RATERS = 1000
   override val MIN_INTERSECTION = 2
 
+  /**
+   * Searches Twitter for Foursquare checkins.
+   *
+   * Output is a pipe, where each row is of the form:
+   *   (user = 235452312, item = "Statue of Liberty", rating = 1)
+   */
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val foursquareCheckins =
       // This is a Twitter-internal source that reads tweets off hdfs.

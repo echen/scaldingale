@@ -20,6 +20,12 @@ class ITunes(args : Args) extends VectorSimilarities(args) {
   override val MAX_NUM_RATERS = 1000
   override val MIN_INTERSECTION = 5
 
+  /**
+   * Searches Twitter for iTunes ratings.
+   *
+   * Output is a pipe, where each row is of the form:
+   *   (user = 124802, item = "Kumbaya by Britney Spears", rating = 4)
+   */
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val itunesRatings =
     // This is a Twitter-internal source that reads tweets off hdfs.

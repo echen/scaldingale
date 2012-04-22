@@ -24,6 +24,12 @@ class RottenTomatoes(args : Args) extends VectorSimilarities(args) {
   override val MAX_NUM_RATERS = 1000
   override val MIN_INTERSECTION = 2
 
+  /**
+   * Searches Twitter for RottenTomatoes ratings.
+   *
+   * Output is a pipe, where each row is of the form:
+   *   (user = 124802, item = "Dark Knight Rises", rating = 3)
+   */
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val rottenTomatoesRatings =
       TweetSource()

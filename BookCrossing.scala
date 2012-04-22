@@ -15,10 +15,12 @@ class BookCrossing(args : Args) extends VectorSimilarities(args) {
   override val MAX_NUM_RATERS = 1000
   override val MIN_INTERSECTION = 2
 
+  /**
+   * Reads in the Book-Crossing dataset.
+   */
   override def input(userField : Symbol, itemField : Symbol, ratingField : Symbol) : Pipe = {
     val bookCrossingRatings =
       Tsv("book-ratings.tsv")
-        .read
         .mapTo((0, 1, 2) -> (userField, itemField, ratingField)) { fields : (String, String, Double) => fields }
     
     bookCrossingRatings
