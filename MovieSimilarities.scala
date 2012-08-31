@@ -120,7 +120,7 @@ class MovieSimilarities(args : Args) extends Job(args) {
    * Output all similarities to a TSV file.
    */
   similarities
-    .project('movie, 'movie2, 'corr, 'regCorr, 'cosSim, 'jaccard, 'size, 'numRaters, 'numRaters2)
+    .project('movie, 'movie2, 'correlation, 'regularizedCorrelation, 'cosineSimilarity, 'jaccardSimilarity, 'size, 'numRaters, 'numRaters2)
     .write(Tsv("./output.tsv"))
   
 // *************************
